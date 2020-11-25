@@ -1,0 +1,10 @@
+{
+	"name": "among-spectate",
+	"version": "1.0.0",
+	"description": "",
+	"type": "module",
+	"dependencies": {
+		"amongus-protocol": "^1.1.32",
+		"express": "^4.17.1"
+	}
+}

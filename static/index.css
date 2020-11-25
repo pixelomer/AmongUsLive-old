@@ -1,0 +1,18 @@
+body {
+  margin: 0;
+  /*text-align: center;*/
+}
+.container {
+  margin: 0;
+  position: relative;
+  left: 0;
+  top: 0;
+}
+.map {
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.player {
+  position: absolute;
+}
