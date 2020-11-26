@@ -122,7 +122,20 @@ int main(int argc, char **argv) {
 					printf("\n");
 				}
 			}
-			if ((flags & 1) || (data[0] == 0)) {
+			bool reliable_exception = (data[0] == 1) && (len >= 6);
+			if (reliable_exception) {
+				switch (data[5]) {
+					case 0x01: // Join game (treated as disconnect packet)
+						reliable_exception = false;
+				}
+			}
+			if (
+				(flags & 1) ||
+				(data[0] == 0) ||
+				(data[0] == 4) ||
+				reliable_exception ||
+				(data[0] == 6)
+			) {
 				sendto(udp_fd, data, len, 0,
 					(struct sockaddr *)&client_address,
 					sizeof(client_address)
