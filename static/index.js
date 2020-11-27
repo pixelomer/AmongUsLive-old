@@ -1,6 +1,7 @@
 var currentMap = undefined;
 var container = undefined;
 var isFetchingMessages = true;
+var fetchIntervalID = undefined;
 var insertedMessageCount = 0;
 var lastState = {
 	"players": {},
@@ -11,7 +12,7 @@ var lastState = {
 const colors = [
   'red',
   'blue',
-  'green',
+  'darkgreen',
   'pink',
   'orange',
   'yellow',
@@ -92,6 +93,9 @@ function parseNewState(newState) {
 			- (player.height / 2)
 			+ (-value["y"] * (player.height * mapMultipliers[currentMap.id].y))
 		) + "px";
+	}
+	if (newState["finished"]) {
+		clearInterval(fetchIntervalID);
 	}
 }
 
@@ -190,7 +194,7 @@ function insertMessages(messages) {
 		element.className = "message";
 		if (message.fromSystem) {
 			element.innerHTML = "<i>" + element.innerHTML + "</i>";
-			element.className = " systemMessage";
+			element.className += " systemMessage";
 		}
 		messageBox.appendChild(element);
 		messageBox.scrollBy(0, Number.MAX_SAFE_INTEGER);

@@ -40,9 +40,28 @@ const app = express();
 var didGameStart = false;
 var players = {};
 var gameCode = "";
+var didGameFinish = false;
 var mapID = null;
 var gameCompletionState = 0;
 var messages = Array();
+
+function getHTMLForPlayer(player, showDead = false) {
+	if ((player === null) || (player === undefined)) {
+		return "<b>(unknown)<b>";
+	}
+	let name = player.name ?? "";
+	name = name.trim();
+	let colorName = ColourID[player.colour ?? ColorID.Black];
+	if (name === "") {
+		name = colorName;
+	}
+	name = "";
+	if (showDead && player.dead) {
+		name += " (dead)";
+	}
+	name = `<img class="chatImage" src="players/${colorName.toLowerCase()}.png"></img> <b>${name}</b>`;
+	return name;
+}
 
 function addMessage(HTMLContents, isSystemMessage) {
 	messages.push({
@@ -62,7 +81,8 @@ app.use('/state', function(request,response) {
 		gameCode:gameCode,
 		mapID:mapID,
 		state:gameCompletionState,
-		messageCount:messages.length
+		messageCount:messages.length,
+		finished:didGameFinish
 	}));
 });
 
@@ -152,7 +172,7 @@ gameClient.connect("0.0.0.0", 42069, "pxOMR").then(()=>{
 			console.log("Impostors:");
 			imposters.forEach((player, index)=>{
 				console.log(`* ${player.name}`);
-				impostorMessage += " <b>" + player.name + "</b>";
+				impostorMessage += ` ${getHTMLForPlayer(player.PlayerData)}`;
 				if ((imposters.length > 1) && (index === (imposters.length - 2))) {
 					impostorMessage += " and";
 				}
@@ -165,8 +185,13 @@ gameClient.connect("0.0.0.0", 42069, "pxOMR").then(()=>{
 			console.log("\nAll players:");
 			game.on("finish", (reason, shouldShowAd)=>{
 				addMessage(enumDescriptions[reason] || "The game finished.", true);
+				didGameFinish = true;
 			});
+			let allPlayersMessage = "The crewmates are";
 			game.GameData.GameData.players.forEach((player)=>{
+				if (!imposters.some((value) => (player.playerId == value.PlayerData.playerId))) {
+					allPlayersMessage += ` ${getHTMLForPlayer(player)},`;
+				}
 				players[player.playerId] = {
 					name: player.name,
 					colour: player.colour,
@@ -198,9 +223,11 @@ gameClient.connect("0.0.0.0", 42069, "pxOMR").then(()=>{
 					console.log("'-* WARNING: Player object was null, not initializing");
 				}
 			});
+			allPlayersMessage = `${allPlayersMessage.substr(0, allPlayersMessage.length - 1)}.`;
+			addMessage(allPlayersMessage, true);
 		});
 		game.on("murder", (murderer, victim)=>{
-			addMessage(`<b>${victim.name}</b> was murdered by <b>${murderer.name}</b>.`, true);
+			addMessage(`${getHTMLForPlayer(victim.PlayerData)} was murdered by ${getHTMLForPlayer(murderer.PlayerData)}.`, true);
 			if ((victim.PlayerData !== null) && (victim.PlayerData !== undefined)) {
 				if (victim.PlayerData.playerId in players) {
 					players[victim.PlayerData.playerId].dead = true;
@@ -209,7 +236,7 @@ gameClient.connect("0.0.0.0", 42069, "pxOMR").then(()=>{
 		});
 		game.on("meeting", (emergency, reportedPlayer)=>{
 			if (!emergency && (reportedPlayer !== null) && (reportedPlayer !== undefined)) {
-				addMessage(`The corpse of <b>${reportedPlayer.name}</b> was reported.`, true);
+				addMessage(`The corpse of ${getHTMLForPlayer(reportedPlayer.PlayerData)} was reported.`, true);
 			}
 			else {
 				addMessage(`An emergency meeting was called.`, true);
@@ -223,11 +250,15 @@ gameClient.connect("0.0.0.0", 42069, "pxOMR").then(()=>{
 		});
 		game.on("votingComplete", (skipped, tie, ejectedPlayer)=>{
 			if (!skipped && !tie && (ejectedPlayer !== null) && (ejectedPlayer !== undefined)) {
-				addMessage(`<b>${ejectedPlayer.name}</b> was ${ejectedPlayer.imposter ? "" : "not "}An Impostor.`, true);
+				addMessage(`${getHTMLForPlayer(ejectedPlayer.PlayerData)} was ${ejectedPlayer.PlayerData.imposter ? "" : "not "}${(game.imposters.length > 1) ? "An" : "The"} Impostor.`, true);
 				players[ejectedPlayer.PlayerData.playerId].dead = true;
 			}
-			addMessage(`No one was ejected. (${tie ? "Tie" : "Skipped"})`, true);
+			else {
+				addMessage(`No one was ejected.${tie ? " (Tie)" : (skipped ? " (Skipped)" : "")}`, true);
+			}
 		});
+		/*
+		// Sometimes causes a crash, even when it doesn't crash it doesn't always trigger
 		game.on("vote", (voter, suspect)=>{
 			if ((suspect === undefined) || (suspect === null)) {
 				addMessage(`<b>${voter.name}</b> voted to skip`, true);
@@ -236,13 +267,15 @@ gameClient.connect("0.0.0.0", 42069, "pxOMR").then(()=>{
 				addMessage(`<b>${voter.name}</b> voted to eject <b>${suspect.name}</b>`, true);
 			}
 		});
+		*/
 		game.on("playerLeave", (playerClient)=>{
-			addMessage(`<b>${playerClient.PlayerData.name}</b> left the game.`, true);
+			addMessage(`${getHTMLForPlayer(playerClient.PlayerData)} left the game.`, true);
 			if (playerClient.PlayerData.playerId in players) {
 				delete players[playerClient.PlayerData.playerId];
 			}
 		});
 		/*
+		// Causes a crash for some reason
 		game.on("playerJoin", (playerClient)=>{
 			addMessage(`<b>${playerClient.PlayerData.name}</b> joined the game.`, true);
 		});
@@ -251,7 +284,7 @@ gameClient.connect("0.0.0.0", 42069, "pxOMR").then(()=>{
 			addMessage(`The game started.`, true);
 		});
 		game.on("chat", (client, message)=>{
-			addMessage(`<b>${client.name}${client.dead ? " (dead)" : ""}:</b> ${message}`, false);
+			addMessage(`${getHTMLForPlayer(client.PlayerData, true)}<b>:</b> ${message}`, false);
 		});
 	});
 });

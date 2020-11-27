@@ -8,6 +8,10 @@ body {
   left: 0;
   top: 0;
 }
+.chatImage {
+  height: 12.5px;
+  width: 14.84375px;
+}
 .map {
   position: absolute;
   top: 0;
@@ -51,7 +55,7 @@ noscript {
   width: 20vw;
 }
 #messageBoxButton:hover {
-  background-color:rgb(182, 155, 119);
+  background-color:rgb(182, 155, 119, 0.85);
 }
 #messageBox {
   position: absolute;
