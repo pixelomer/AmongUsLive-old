@@ -1,24 +1,21 @@
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
-}
-.container {
-  margin: 0;
-  position: absolute;
-  left: 0;
-  top: 0;
+  scrollbar-width: none;
+  overflow: hidden;
 }
 .chatImage {
-  height: 12.5px;
-  width: 14.84375px;
+  height: 16px;
+  width: 18.5px;
 }
 .map {
-  position: absolute;
-  top: 0;
-  left: 0;
+  height: 100%;
+  width: 100%;
 }
 .player {
   position: absolute;
+  width: 2.702%;
+  object-fit: contain;
 }
 noscript {
   text-align: center;
@@ -30,48 +27,60 @@ noscript {
   top: 0;
   left: 0;
 }
-#messageBoxButton {
+#gameContainer {
+  height: 100vh;
+  background-color: black;
+}
+#game {
+  margin: auto;
+  background-color: white;
   position: absolute;
-  left: 5vw;
+  top: 0;
+  left: 0;
   bottom: 0;
-  padding-left: 12.5px;
-  padding-right: 12.5px;
-  background-color: rgba(210, 180, 140, 0.85);
-  border-top: black;
-  border-width: 1px 0 0 0;
-  border-style: solid;
-  height: 30px;
-  padding: 0 12.5px 0 12.5px;
-  font-size: 15px;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  line-height: 0;
+  right: 250px;
+}
+#chatHeader {
+  position: relative;
+  top: 0;
+  padding: 7px;
+  background-color: rgba(0,0,0,0.2);
+  border-bottom-color: black;
+  border-bottom-width: 1px;
+  font-size: 16px;
+  border-bottom-style: solid;
   text-align: center;
   margin: 0;
-  width: 20vw;
 }
-#messageBoxButton:hover {
-  background-color:rgb(182, 155, 119, 0.85);
+#chatHeader > span {
+  height: 16px;
 }
-#messageBox {
+#chatContainer {
   position: absolute;
-  left: 5vw;
-  overflow: scroll;
-  bottom: 30px;
-  padding: 0 12.5px 0 12.5px;
-  background-color: rgba(210, 180, 140, 0.85);
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  height: 45vh;
-  width: 20vw;
+  right: 0;
+  background-color: white;
+  top: 0;
+  height: 100%;
+  width: 249px;
+  border-left-width: 1px;
+  border-left-color: black;
+  border-left-style: solid;
 }
-#messageBox > p {
+#chat {
+  position: absolute;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 0 10px 0 10px;
+  top: 33px;
+  width: 229px;
+  bottom: 0;
+}
+#chat > p {
   font-size: 13px;
 }
 .systemMessage {
   text-align: center;
+}
+::-webkit-scrollbar {
+  display: none;
 }

@@ -55,11 +55,10 @@ function getHTMLForPlayer(player, showDead = false) {
 	if (name === "") {
 		name = colorName;
 	}
-	name = "";
-	if (showDead && player.dead) {
-		name += " (dead)";
+	if (showDead && (player.dead || ((player.playerId in players) && (players[player.playerId].dead)))) {
+		name += " <span style=\"color:red\">(dead)</span>";
 	}
-	name = `<img class="chatImage" src="players/${colorName.toLowerCase()}.png"></img> <b>${name}</b>`;
+	name = `<img class="chatImage" alt="[${colorName.toLowerCase()}]" src="players/${colorName.toLowerCase()}.png"></img> <b>${name}</b>`;
 	return name;
 }
 
@@ -221,6 +220,7 @@ gameClient.connect("0.0.0.0", 42069, "pxOMR").then(()=>{
 				}
 				else {
 					console.log("'-* WARNING: Player object was null, not initializing");
+					addMessage(`<b>WARNING:</b> Failed to set event handlers for ${getHTMLForPlayer(player)}.`, true);
 				}
 			});
 			allPlayersMessage = `${allPlayersMessage.substr(0, allPlayersMessage.length - 1)}.`;

@@ -1,5 +1,6 @@
 var currentMap = undefined;
-var container = undefined;
+var gameElement = undefined;
+var gameContainer = undefined;
 var isFetchingMessages = true;
 var fetchIntervalID = undefined;
 var insertedMessageCount = 0;
@@ -37,15 +38,15 @@ const maps = [
 ];
 
 const mapCenters = {
-	'skeld' : {x:0.59, y:0.28},
-	'mirahq' : {x:0.289, y:0.852},
+	'skeld' : {x:0.59, y:0.26},
+	'mirahq' : {x:0.289, y:0.875},
 	'polus' : {x:0.0, y:0.1}
 };
 
 const mapMultipliers = {
-	'skeld' : {x:0.8, y:0.75},
-	'mirahq' : {x:0.9, y:0.85},
-	'polus' : {x:0.9, y:0.84}
+	'skeld' : {x:0.8, y:0.94},
+	'mirahq' : {x:0.9, y:1.1},
+	'polus' : {x:0.9, y:1.0}
 };
 
 // ratio = width/height
@@ -99,33 +100,17 @@ function parseNewState(newState) {
 	}
 }
 
-function onShowHideClick(event) {
-	const messageBox = document.getElementById("messageBox");
-	const messageBoxButton = document.getElementById("messageBoxButton");
-	if (messageBox.style.display !== "none") {
-		messageBox.style.display = "none";
-		messageBoxButton.firstChild.innerText = "Show Messages";
-		messageBoxButton.style.borderTopWidth = "0px";
-		messageBoxButton.style.borderTopLeftRadius = "10px";
-		messageBoxButton.style.borderTopRightRadius = "10px";
-	}
-	else {
-		messageBox.style.display = "";
-		messageBoxButton.firstChild.innerText = "Hide Messages";
-		messageBoxButton.removeAttribute("style");
-	}
-}
-
 function handleLoad() {
 	window.onresize = handleResize;
-	container = document.getElementById("container");
+	gameElement = document.getElementById("game");
+	gameContainer = document.getElementById("gameContainer");
 	for (let i in maps) {
 		const element = document.createElement("img");
-		element.src = "maps/" + maps[i] + ".png";
+		element.src = "maps/" + maps[i] + ".jpg";
 		element.hidden = true;
 		element.id = maps[i];
 		element.classList.add("map");
-		container.appendChild(element);
+		gameElement.appendChild(element);
 	}
 	for (let i=0; i<10; i++) {
 		const element = document.createElement("img");
@@ -133,26 +118,14 @@ function handleLoad() {
 		element.hidden = true;
 		element.id = "player"+i;
 		element.classList.add("player");
-		element.style.objectFit = "contain";
-		container.appendChild(element);
+		gameElement.appendChild(element);
 	}
 	setMap(maps[0]);
 	handleResize();
-	const messageBox = document.createElement("div");
-	const messageBoxButton = document.createElement("div");
-	messageBoxButton.id = "messageBoxButton";
-	messageBoxButton.onclick = onShowHideClick;
-	messageBox.id = "messageBox";
-	const messageBoxButtonText = document.createElement("p");
-	messageBoxButtonText.innerText = "Hide Messages";
-	messageBoxButtonText.onselectstart = ()=>{return false};
-	container.appendChild(messageBox);
-	container.appendChild(messageBoxButton);
-	messageBoxButton.appendChild(messageBoxButtonText);
 	const gameCodeLabel = document.createElement("p");
 	gameCodeLabel.id = "gameCode";
 	const boldLabel = document.createElement("b");
-	container.appendChild(boldLabel);
+	gameElement.appendChild(boldLabel);
 	boldLabel.appendChild(gameCodeLabel);
 	setMap(maps[0]);
 	fetchIntervalID = window.setInterval(function(){
@@ -186,7 +159,7 @@ function setMap(name) {
 }
 
 function insertMessages(messages) {
-	const messageBox = document.getElementById("messageBox");
+	const chat = document.getElementById("chat");
 	messages.forEach((message)=>{
 		insertedMessageCount++;
 		const element = document.createElement("p");
@@ -196,39 +169,30 @@ function insertMessages(messages) {
 			element.innerHTML = "<i>" + element.innerHTML + "</i>";
 			element.className += " systemMessage";
 		}
-		messageBox.appendChild(element);
-		messageBox.scrollBy(0, Number.MAX_SAFE_INTEGER);
+		chat.appendChild(element);
+		chat.scrollBy(0, Number.MAX_SAFE_INTEGER);
 	});
 }
 
 function handleResize() {
 	let mapHeight, mapWidth;
 	let ratio = mapRatios[currentMap.id];
-	if (window.innerHeight > (window.innerWidth / ratio)) {
-		mapWidth = window.innerWidth;
-		mapHeight = window.innerWidth / ratio;
+	let fakeWidth = window.innerWidth - 250.0;
+	if (window.innerHeight > (fakeWidth / ratio)) {
+		mapWidth = fakeWidth;
+		mapHeight = fakeWidth / ratio;
 	}
 	else {
-		mapWidth = window.innerHeight * ratio;
 		mapHeight = window.innerHeight;
+		mapWidth = window.innerHeight * ratio;
 	}
 	const gameCodeLabel = document.getElementById("gameCode");
 	if (gameCodeLabel !== null) {
 		gameCodeLabel.style.marginLeft = ((mapWidth / 100) * 1.25) + "px";
 		gameCodeLabel.style.fontSize = ((mapWidth / 100) * 2.5) + "px";
 	}
-	const elements = document.getElementsByTagName("img");
-	container.style.width = mapWidth+"px";
-	container.style.height = mapHeight+"px";
-	for (let i=0; i<elements.length; i++) {
-		if (elements[i].classList.contains("player")) {
-			elements[i].width = mapWidth / 37;
-			elements[i].height = mapWidth / 37;
-		}
-		else if (elements[i].classList.contains("map")) {
-			elements[i].width = mapWidth;
-			elements[i].height = mapHeight;
-		}
-	}
+	gameContainer.style.width = fakeWidth+"px";
+	gameElement.style.width = mapWidth+"px";
+	gameElement.style.height = mapHeight+"px";
 	parseNewState(lastState);
 }
