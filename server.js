@@ -51,7 +51,7 @@ function getHTMLForPlayer(player, showDead = false) {
 	}
 	let name = player.name ?? "";
 	name = name.trim();
-	let colorName = ColourID[player.colour ?? ColorID.Black];
+	let colorName = ColourID[player.colour ?? ColourID.Black];
 	if (name === "") {
 		name = colorName;
 	}
@@ -137,15 +137,7 @@ app.use('/message/id/:messageID', function(request,response) {
 });
 
 // Static files
-app.use('/:file', function(request,response) {
-	response.sendFile(projectRoot + '/static/' + request.params.file);
-});
-app.use('/maps/:file', function(request,response) {
-	response.sendFile(projectRoot + '/static/maps/' + request.params.file);
-});
-app.use('/players/:file', function(request,response) {
-	response.sendFile(projectRoot + '/static/players/' + request.params.file);
-});
+app.use(express.static(projectRoot + "/static"));
 
 // Start the Among Us client
 const gameClient = new AmongusClient({ debug: false });
@@ -294,7 +286,11 @@ const HTTPServer = app.listen(port, ()=>{
 	console.log(`Among Us Live listening at http://localhost:${port}`)
 });
 
-process.on("SIGINT", ()=>{
+function cleanup() {
 	HTTPServer.close();
 	process.exit();
+};
+
+process.on("SIGINT", ()=>{
+	cleanup();
 });
